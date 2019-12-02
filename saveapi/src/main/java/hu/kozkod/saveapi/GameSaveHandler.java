@@ -22,24 +22,29 @@ public class GameSaveHandler {
     @Bean
     RouterFunction<ServerResponse> saveApiRoutes() {
         return route(POST("/").and(accept(APPLICATION_JSON)), this::save)
-                .andRoute(GET("/"), this::load);
+                .andRoute(GET("/"), this::listAll)
+                .andRoute(GET("/{level}"), this::load);
     }
 
     private Mono<ServerResponse> save(ServerRequest req) {
-        return req.bodyToMono(String.class)
-                .map(GameSave::new)
+        return req.bodyToMono(GameSave.class)
                 .flatMap(repository::save)
                 .flatMap(gameSave ->
                         ServerResponse
                                 .created(req.uriBuilder()
-                                        .pathSegment(gameSave.getId().toString())
+                                        .pathSegment(gameSave.getLevel())
                                         .build())
                                 .bodyValue(gameSave));
     }
 
-    private Mono<ServerResponse> load(ServerRequest req) {
+    private Mono<ServerResponse> listAll(ServerRequest req) {
         return repository.findAll()
-                .next()
+                .collectList()
+                .flatMap(saves -> ServerResponse.ok().body(saves, GameSave.class));
+    }
+
+    private Mono<ServerResponse> load(ServerRequest req) {
+        return repository.findById(req.pathVariable("level"))
                 .map(GameSave::getData)
                 .flatMap(gameSaveData -> ServerResponse.ok().bodyValue(gameSaveData))
                 .switchIfEmpty(ServerResponse.notFound().build());
