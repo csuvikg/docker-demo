@@ -1,0 +1,16 @@
+version: '3'
+services:
+  saveapi:
+    image: localhost:5000/saveapi
+    ports:
+    - "8080:8080"
+    volumes:
+    - .:/code
+    links:
+    - mongodb
+    depends_on: 
+    - mongodb
+  mongodb:
+    image: mongo
+# game:
+  # ...

@@ -40,7 +40,7 @@ public class GameSaveHandler {
     private Mono<ServerResponse> listAll(ServerRequest req) {
         return repository.findAll()
                 .collectList()
-                .flatMap(saves -> ServerResponse.ok().body(saves, GameSave.class));
+                .flatMap(saves -> ServerResponse.ok().bodyValue(saves));
     }
 
     private Mono<ServerResponse> load(ServerRequest req) {
